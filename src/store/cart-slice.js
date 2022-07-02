@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { uiActions } from "./ui-slice";
 
 const cartSlice = createSlice({
   name: "cart",
@@ -7,9 +6,15 @@ const cartSlice = createSlice({
     itemsList: [],
     totalQuantity: 0,
     showCart: false,
+    changed: false
   },
   reducers: {
+    replaceData(state, action) {
+      state.totalQuantity = action.payload.totalQuantity;
+      state.itemsList = action.payload.itemsList;
+    },
     addToCart(state, action) {
+      state.changed = true;
       const newItem = action.payload;
 
       //to check if item is already available
@@ -31,6 +36,7 @@ const cartSlice = createSlice({
       state.totalQuantity++;
     },
     removeFromCart(state, action) {
+      state.changed = true;
       const removeItemId = action.payload;
 
       const existingItem = state.itemsList.find(
@@ -56,54 +62,6 @@ const cartSlice = createSlice({
     },
   },
 });
-
-export const sendCartData = (cart) => {
-  return async(dispatch) => {
-    dispatch(
-      uiActions.showNotification({
-        type: "warning",
-        message: "Sending request to firebase",
-        isOpen: true,
-      })
-    );
-    const sendRequest = async () => {
-      // Send state as Sending request
-
-      const res = await fetch(
-        "https://redux-http-30f5a-default-rtdb.europe-west1.firebasedatabase.app/cartItems.json",
-        {
-          method: "PUT",
-          body: JSON.stringify(cart),
-        }
-      );
-
-      // data
-      await res.json();
-      
-      // Send state as Request is successful
-      dispatch(
-        uiActions.showNotification({
-          type: "success",
-          message: "Sending request successful",
-          isOpen: true,
-        })
-      );
-    };
-    try {
-      await sendRequest()
-    } catch (err) {
-      // Send state as Request is unsuccessful
-      console.log(err)
-      dispatch(
-        uiActions.showNotification({
-          type: "error",
-          message: "Sending request failed",
-          isOpen: true,
-        })
-      );
-    }
-  }
-}
 
 export const cartActions = cartSlice.actions;
 
